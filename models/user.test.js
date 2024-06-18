@@ -12,6 +12,7 @@ const {
   commonBeforeEach,
   commonAfterEach,
   commonAfterAll,
+  testJobIds
 } = require("./_testCommon");
 
 beforeAll(commonBeforeAll);
@@ -140,8 +141,9 @@ describe("get", function () {
       lastName: "U1L",
       email: "u1@email.com",
       isAdmin: false,
+      jobs: [testJobIds[0]],
     });
-  });
+  });  
 
   test("not found if no such user", async function () {
     try {
@@ -152,7 +154,6 @@ describe("get", function () {
     }
   });
 });
-
 /************************************** update */
 
 describe("update", function () {

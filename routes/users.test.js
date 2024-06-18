@@ -176,6 +176,7 @@ describe("GET /users/:username", function () {
         lastName: "U1L",
         email: "user1@user.com",
         isAdmin: false,
+        jobs: [],
       },
     });
   });
@@ -193,6 +194,25 @@ describe("GET /users/:username", function () {
     expect(resp.statusCode).toEqual(404);
   });
 });
+
+//I ADDED
+
+test("works for users", async function () {
+  const resp = await request(app)
+    .get(`/users/u1`)
+    .set("authorization", `Bearer ${u1Token}`);
+  expect(resp.body).toEqual({
+    user: {
+      username: "u1",
+      firstName: "U1F",
+      lastName: "U1L",
+      email: "user1@user.com",
+      isAdmin: false,
+      jobs: [],
+    },
+  });
+});
+
 
 /************************************** PATCH /users/:username */
 

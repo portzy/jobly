@@ -5,6 +5,12 @@ const User = require("../models/user");
 const Company = require("../models/company");
 const { createToken } = require("../helpers/tokens");
 
+const jwt = require("jsonwebtoken");
+const { SECRET_KEY } = require("../config");
+
+const adminToken = jwt.sign({ username: "admin", isAdmin: true }, SECRET_KEY);
+const userToken = jwt.sign({ username: "user", isAdmin: false }, SECRET_KEY);
+
 async function commonBeforeAll() {
   // noinspection SqlWithoutWhere
   await db.query("DELETE FROM users");
@@ -79,6 +85,8 @@ const u1Token = createToken({ username: "u1", isAdmin: false });
 
 
 module.exports = {
+  adminToken,
+  userToken,
   commonBeforeAll,
   commonBeforeEach,
   commonAfterEach,

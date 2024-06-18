@@ -49,15 +49,53 @@ class Company {
    * Returns [{ handle, name, description, numEmployees, logoUrl }, ...]
    * */
 
-  static async findAll() {
-    const companiesRes = await db.query(
+  static async findAll(filters = {}) {
+    let query =
           `SELECT handle,
                   name,
                   description,
                   num_employees AS "numEmployees",
                   logo_url AS "logoUrl"
-           FROM companies
-           ORDER BY name`);
+           FROM companies`
+
+    // ADDED -  filter the results based on optional filtering criteria
+    //stores the conditions for the WHERE clause of the SQL query
+    let whereExpressions = [];
+    // stores the values that will be used in these conditions
+    let queryValues = [];
+
+    const { minEmployees, maxEmployees, name } = filters;
+
+    if (minEmployees !== undefined && maxEmployees !== undefined && minEmployees > maxEmployees) {
+      throw new BadRequestError("Min employees cannot be greater than max");
+    }
+
+    //ADDED conditions for minEmployees
+    if(minEmployees !== undefined){
+      queryValues.push(minEmployees);
+      whereExpressions.push(`num_employees >= $${queryValues.length}`);
+    }
+
+    // conditions for maxEmployees
+    if (maxEmployees !== undefined) {
+      queryValues.push(maxEmployees);
+      whereExpressions.push(`num_employees <= $${queryValues.length}`);
+    }
+
+    //ADDED conditions for name
+    if(name) {
+      queryValues.push(`%${name}%`);
+      whereExpressions.push(`name ILIKE $${queryValues.length}`);
+    }
+    
+    //if there are any filter conditions, add them to query
+    if (whereExpressions.length > 0) {
+      query += " WHERE " + whereExpressions.join(" AND ");
+    }
+
+    //finalize query
+    query += " ORDER BY name";
+    const companiesRes = await db.query(query, queryValues);
     return companiesRes.rows;
   }
 
@@ -84,6 +122,17 @@ class Company {
 
     if (!company) throw new NotFoundError(`No company: ${handle}`);
 
+        //I ADDED
+        const jobsRes = await db.query(
+          `SELECT id, title, salary, equity
+          FROM jobs
+          WHERE company_handle = $1
+          ORDER BY id`,
+        [handle],
+    );
+
+    company.jobs = jobsRes.rows;
+    
     return company;
   }
 
